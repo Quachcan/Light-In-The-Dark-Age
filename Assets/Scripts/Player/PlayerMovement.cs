@@ -13,14 +13,24 @@ namespace Player
         
         private Vector3 _currentMovementInput;
         private Vector3 _currentMovement;
+        [SerializeField]
+        private LayerMask whatIsGround;
         
         private bool _isMovementPressed;
+        private bool _isMouseHeld;
+        private bool _isSprinting;
         
         [SerializeField]
         private float rotationSpeed;
         
         [SerializeField]
         private float movementSpeed;
+        private float _defaultMovementSpeed;
+        [SerializeField]
+        private float reducedMovementSpeed;
+        [SerializeField]
+        private float sprintSpeed;
+        
 
         private void Awake()
         {
@@ -31,19 +41,26 @@ namespace Player
             _characterController = GetComponent<CharacterController>();
             _animator = GetComponentInChildren<Animator>();
             
-            AnimationManager.Instance.InitializeAnimator(_animator, "isMoving");
+            AnimationManager.Instance.InitializeAnimator(
+                _animator, "isRunning", "isWalking", "isSprinting", "isStrafing", "XInput", "YInput");
             
             _playerControl.Player.Move.started += OnMovementInput;
             _playerControl.Player.Move.canceled += OnMovementInput;
             _playerControl.Player.Move.performed += OnMovementInput;
+            
+            _playerControl.Player.MouseClick.started += ctx => OnMouseDown();
+            _playerControl.Player.MouseClick.canceled += ctx => OnMouseUp();
+
+            _playerControl.Player.Sprint.started += ctx => OnSprinting();
+            _playerControl.Player.Sprint.canceled += ctx => OffSprinting();
+            
+            _defaultMovementSpeed = movementSpeed;
         }
 
         private void Update()
         {
-            if (_isMovementPressed)
-            {
-                HandleRotation();
-            }
+            AdjustMovementSpeed();
+            HandleRotation();
             HandleMovement();
             HandleAnimation();
         }
@@ -56,30 +73,117 @@ namespace Player
             _isMovementPressed =_currentMovementInput.x != 0 || _currentMovementInput.y != 0;
         }
 
+        private void OnMouseDown()
+        {
+            _isMouseHeld = true;
+        }
+
+        private void OnMouseUp()
+        {
+            _isMouseHeld = false;
+        }
+
+        private void OnSprinting()
+        {
+            _isSprinting = true;
+        }
+
+        private void OffSprinting()
+        {
+            _isSprinting = false;
+        }
+
         private void HandleMovement()
         {
-            Vector3 movement = _currentMovement;
-            movement.y = -1f;
-            _characterController.Move(movement * (movementSpeed * Time.deltaTime));
+            if (_isMovementPressed)
+            {
+                Vector3 movement = _currentMovement.normalized;
+                
+                if (_isMouseHeld)
+                {
+                    movement = transform.right * _currentMovement.x + transform.forward * _currentMovement.z;
+                }
+
+                _characterController.Move(movement * (movementSpeed * Time.deltaTime));
+                
+            }
         }
 
         private void HandleRotation()
         {
-            Vector3 positionToLookAt;
-            positionToLookAt.x = _currentMovement.x;
-            positionToLookAt.y = 0;
-            positionToLookAt.z = _currentMovement.z;
-
-            if (positionToLookAt.sqrMagnitude > 0.1f)
+            if (_isMouseHeld)
             {
-                Quaternion lookRotation = Quaternion.LookRotation(positionToLookAt);
-                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+                Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, whatIsGround))
+                {
+                    
+                    Vector3 targetPosition = hit.point;
+                    targetPosition.y = transform.position.y;
+                    
+                    Vector3 lookDirection = (targetPosition - transform.position).normalized;
+                    if (lookDirection.sqrMagnitude > 0.01f)
+                    {
+                        Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+                    }
+                }
+            }
+            else if (_isMovementPressed)
+            {
+                Vector3 direction = _currentMovement;
+                if (direction.sqrMagnitude > 0.01f)
+                {
+                    Quaternion rotation = Quaternion.LookRotation(direction);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
+                }
+            }
+        }
+
+        private void AdjustMovementSpeed()
+        {
+            if (_isSprinting && !_isMouseHeld)
+            {
+                movementSpeed = sprintSpeed;
+            }
+            else if (_isMouseHeld)
+            {
+                movementSpeed = reducedMovementSpeed;
+            }
+            else
+            {
+                movementSpeed = _defaultMovementSpeed;   
             }
         }
 
         private void HandleAnimation()
         {
-            AnimationManager.Instance.SetBool(_animator, "isMoving", _isMovementPressed);
+            Vector3 cameraForward = Camera.main.transform.forward;
+            Vector3 cameraRight = Camera.main.transform.right;
+            
+            cameraForward.y = 0f;
+            cameraRight.y = 0f;
+
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+            
+            Vector3 movement = cameraRight * _currentMovement.x + cameraForward * _currentMovement.z;
+
+            float moveX = Vector3.Dot(movement, transform.right);
+            float moveY = Vector3.Dot(movement, transform.forward);
+            
+            AnimationManager.Instance.SetFloat(_animator, "XInput", moveX);
+            AnimationManager.Instance.SetFloat(_animator, "YInput", moveY);
+            
+            //bool isWalking = Mathf.Approximately(movementSpeed, reducedMovementSpeed) && _isMovementPressed;
+            bool isRunning = Mathf.Approximately(movementSpeed, _defaultMovementSpeed) && _isMovementPressed;
+            bool isSprinting = Mathf.Approximately(movementSpeed, sprintSpeed) && _isMovementPressed;
+            bool isStrafing = _isMouseHeld && _isMovementPressed;
+            
+            //AnimationManager.Instance.SetBool(_animator, "isWalking", isWalking);
+            AnimationManager.Instance.SetBool(_animator, "isRunning", isRunning);
+            AnimationManager.Instance.SetBool(_animator, "isSprinting", isSprinting);
+            AnimationManager.Instance.SetBool(_animator, "isStrafing", isStrafing);
+            
         }
 
         private void OnEnable()

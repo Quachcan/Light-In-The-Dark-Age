@@ -38,5 +38,13 @@ namespace Managers
                 animator.SetTrigger(hash);
             }
         }
+
+        public void SetFloat(Animator animator, string parameter, float value)
+        {
+            if (_animatorHashes.TryGetValue(animator, out var hashes) && hashes.TryGetValue(parameter, out var hash))
+            {
+                animator.SetFloat(hash, value);
+            }
+        }
     }
 }

@@ -46,5 +46,11 @@ namespace Managers
                 animator.SetFloat(hash, value);
             }
         }
+
+        private void HandleAnimationValues(float horizontalMovement, float verticalMovement)
+        {
+            
+        }
+        
     }
 }

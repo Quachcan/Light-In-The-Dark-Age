@@ -6,14 +6,15 @@ namespace Managers
     public class PlayerManager : MonoBehaviour
     {
         public static PlayerManager Instance;
-    
-    
+        
         [Header("References Modules")]
         private PlayerMovement _playerMovement;
         private PlayerCombat _playerCombat;
         private PlayerStats _playerStats;
         private PlayerData _playerData;
         private Inventory _inventory;
+        private PlayerCamera _playerCamera;
+        
 
         private bool _isAlive;
 
@@ -30,6 +31,7 @@ namespace Managers
         private void Awake()
         {
             InitializeModules();
+            _playerCamera = FindAnyObjectByType<PlayerCamera>();
         }
         
         private void Update()
@@ -38,6 +40,11 @@ namespace Managers
             {
             
             }
+        }
+
+        private void LateUpdate()
+        {
+            _playerCamera.HandleAllCameraMovement();
         }
 
         private void InitializeModules()

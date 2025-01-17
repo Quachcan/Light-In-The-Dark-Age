@@ -95,46 +95,75 @@ namespace Player
 
         private void HandleMovement()
         {
-            if (_isMovementPressed)
-            {
-                Vector3 movement = _currentMovement.normalized;
+            // if (_isMovementPressed)
+            // {
+            //     Vector3 movement = _currentMovement.normalized;
+            //     
+            //     if (_isMouseHeld)
+            //     {
+            //         movement = transform.right * _currentMovement.x + transform.forward * _currentMovement.z;
+            //     }
+            //
+            //     _characterController.Move(movement * (movementSpeed * Time.deltaTime));
+            //     
+            // }
+            
+            Vector3 cameraForward = Camera.main.transform.forward;
+            Vector3 cameraRight = Camera.main.transform.right;
                 
-                if (_isMouseHeld)
-                {
-                    movement = transform.right * _currentMovement.x + transform.forward * _currentMovement.z;
-                }
-
-                _characterController.Move(movement * (movementSpeed * Time.deltaTime));
+            cameraForward.y = 0;
+            cameraRight.y = 0;
                 
-            }
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+                
+            Vector3 movement = (cameraRight * _currentMovement.x + cameraForward * _currentMovement.z).normalized;
+            
+            _characterController.Move(movement * (movementSpeed * Time.deltaTime));
         }
 
         private void HandleRotation()
         {
-            if (_isMouseHeld)
+            // if (_isMouseHeld)
+            // {
+            //     Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            //     if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, whatIsGround))
+            //     {
+            //         
+            //         Vector3 targetPosition = hit.point;
+            //         targetPosition.y = transform.position.y;
+            //         
+            //         Vector3 lookDirection = (targetPosition - transform.position).normalized;
+            //         if (lookDirection.sqrMagnitude > 0.01f)
+            //         {
+            //             Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
+            //             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+            //         }
+            //     }
+            // }
+            // else if (_isMovementPressed)
+            // {
+            //     Vector3 direction = _currentMovement;
+            //     if (direction.sqrMagnitude > 0.01f)
+            //     {
+            //         Quaternion rotation = Quaternion.LookRotation(direction);
+            //         transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
+            //     }
+            // }
+
+            if (_isMovementPressed)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, whatIsGround))
+                Vector3 cameraForward = Camera.main.transform.forward;
+                
+                cameraForward.y = 0;
+                
+                cameraForward.Normalize();
+                
+
+                if (cameraForward.sqrMagnitude > 0.01f)
                 {
-                    
-                    Vector3 targetPosition = hit.point;
-                    targetPosition.y = transform.position.y;
-                    
-                    Vector3 lookDirection = (targetPosition - transform.position).normalized;
-                    if (lookDirection.sqrMagnitude > 0.01f)
-                    {
-                        Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
-                        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
-                    }
-                }
-            }
-            else if (_isMovementPressed)
-            {
-                Vector3 direction = _currentMovement;
-                if (direction.sqrMagnitude > 0.01f)
-                {
-                    Quaternion rotation = Quaternion.LookRotation(direction);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
+                    Quaternion rotation = Quaternion.LookRotation(cameraForward);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
                 }
             }
         }
@@ -196,7 +225,5 @@ namespace Player
             _playerControl.Disable();
         }
         
-
-        // Update is called once per frame
     }
 }

@@ -13,15 +13,12 @@ namespace Player
         private Rigidbody _rigidbody;
         private AnimationManager _animationManager;
         
-        private Vector3 _currentMovementInput;
-        private Vector3 _currentMovement;
         [SerializeField]
         private LayerMask whatIsGround;
 
         public Transform playerCamera;
         
         private bool _isRunning;
-        private bool _isMouseHeld;
         private bool _isSprinting;
         public bool _isWalking;
         
@@ -39,7 +36,10 @@ namespace Player
         private float sprintSpeed;
         [SerializeField]
         private float walkSpeed;
-        
+
+        private float _targetXValue;
+        private float _targetYValue;
+
 
         private void Awake()
         {
@@ -52,7 +52,7 @@ namespace Player
             _rigidbody = GetComponent<Rigidbody>();
             _animationManager = GetComponentInChildren<AnimationManager>();
             
-            _animationManager.InitializeAnimator(_animator, "XInput", "YInput", "isWalking");
+            _animationManager.InitializeAnimator(_animator, "XInput", "YInput", "isWalking", "isAiming");
             
             _defaultMovementSpeed = movementSpeed;
         }
@@ -71,11 +71,12 @@ namespace Player
         private void HandleMovement()
         {
             Vector2 moveInput = _inputManager.MoveInput;
+            bool _isAiming = _inputManager.IsAiming;
             _isRunning = (moveInput.sqrMagnitude > 0.01f);
             _isWalking = _inputManager.IsWalking;
             _isSprinting = _inputManager.IsSprinting;
 
-            if (_isWalking)
+            if (_isWalking || moveInput.y <0f || _isAiming)
             {
                 movementSpeed = walkSpeed;
             }
@@ -106,12 +107,21 @@ namespace Player
 
         private void HandleRotation()
         {
-            _targetRotation = Quaternion.Euler(0, playerCamera.eulerAngles.y, 0);
-            _playerRotation = Quaternion.Slerp(transform.rotation, _targetRotation, rotationSpeed * Time.deltaTime);
-
-            if (_inputManager.MoveInput.x != 0 || _inputManager.MoveInput.y != 0)
+            if(_inputManager.IsAiming)
             {
+                _targetRotation = Quaternion.Euler(0, playerCamera.eulerAngles.y, 0);
+                _playerRotation = Quaternion.Slerp(transform.rotation, _targetRotation, rotationSpeed * Time.deltaTime);
                 transform.rotation = _playerRotation;
+            }
+            else
+            {
+                _targetRotation = Quaternion.Euler(0, playerCamera.eulerAngles.y, 0);
+                _playerRotation = Quaternion.Slerp(transform.rotation, _targetRotation, rotationSpeed * Time.deltaTime);
+
+                if (_inputManager.MoveInput.x != 0 || _inputManager.MoveInput.y != 0)
+                {
+                    transform.rotation = _playerRotation;
+                }
             }
         }
         
@@ -122,15 +132,32 @@ namespace Player
             float xValue = moveInput.x;
             float yValue = moveInput.y;
             bool walking = _inputManager.IsWalking;
-            
+            bool _isAiming = _inputManager.IsAiming;
+
+            if(xValue != 0 || yValue != 0 || _isAiming)
+            {
+                _animationManager.rightHandIK.weight = 0f;
+                _animationManager.leftHandIK.weight = 0f;
+            }
+            else
+            {
+                _animationManager.rightHandIK.weight = 1f;
+                _animationManager.leftHandIK.weight = 1f;
+            }
+
             if (_inputManager.IsSprinting && yValue > 0)
             {
                 yValue = 2f;
             }
+
+
+
+            _targetXValue = Mathf.Lerp(_targetXValue, xValue, 10f *Time.deltaTime);
+            _targetYValue = Mathf.Lerp(_targetYValue, yValue, 10f * Time.deltaTime);
             
             _animationManager.SetBool(_animator, "isWalking", walking);
-            _animationManager.SetFloat(_animator, "XInput", xValue);
-            _animationManager.SetFloat(_animator, "YInput", yValue);
+            _animationManager.SetFloat(_animator, "XInput", _targetXValue);
+            _animationManager.SetFloat(_animator, "YInput", _targetYValue);
         }
 
         private void OnEnable()

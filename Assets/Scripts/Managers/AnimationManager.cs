@@ -1,16 +1,28 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 namespace Managers
 {
     public class AnimationManager : MonoBehaviour
     {
         private static AnimationManager _instance;
-        
+
+        [Header("References")]
         public Animator animator;
+        public TwoBoneIKConstraint rightHandIK;
+        public TwoBoneIKConstraint leftHandIK;
+
+        [SerializeField]
+        private RigBuilder _rigBuilder;
         
         private readonly Dictionary<Animator, Dictionary<string, int>> _animatorHashes = new Dictionary<Animator, Dictionary<string, int>>();
+
+        private void Awake()
+        {
+            _rigBuilder = GetComponentInChildren<RigBuilder>();
+        }
 
         private void Start()
         {
@@ -30,7 +42,7 @@ namespace Managers
             }
         }
 
-        public void SetBool(Animator animators, string parameter, bool value)
+        public void SetBool(Animator targetAnimator, string parameter, bool value)
         {
             if (_animatorHashes.TryGetValue(animator, out var hashes) && hashes.TryGetValue(parameter, out var hash))
             {
@@ -38,7 +50,7 @@ namespace Managers
             }
         }
 
-        public void SetTrigger(Animator animators, string parameter)
+        public void SetTrigger(Animator targetAnimator, string parameter)
         {
             if (_animatorHashes.TryGetValue(animator, out var hashes) && hashes.TryGetValue(parameter, out var hash))
             {
@@ -46,13 +58,25 @@ namespace Managers
             }
         }
 
-        public void SetFloat(Animator animator, string parameter, float value)
+        public void SetFloat(Animator targetAnimator, string parameter, float value)
         {
             if (_animatorHashes.TryGetValue(animator, out var hashes) && hashes.TryGetValue(parameter, out var hash))
             {
                 animator.SetFloat(hash, value);
             }
         }
+
+        public void AssignHandIK(RightHandIKTarget rightHandTarget, LeftHandIKTarget leftHandTarget)
+        {
+            rightHandIK.data.target = rightHandTarget.transform;
+            leftHandIK.data.target = leftHandTarget.transform;
+            if(_rigBuilder == null)
+            {
+                Debug.Log("Null");
+            }
+            _rigBuilder.Build();
+        }
+
 
         private void HandleAnimationValues(float horizontalMovement, float verticalMovement)
         {

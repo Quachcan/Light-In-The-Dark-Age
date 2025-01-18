@@ -14,8 +14,12 @@ public class InputManager : MonoBehaviour
     private bool _isSprinting;
     public bool IsSprinting => _isSprinting;
     
-    public bool _isWalking;
+    private bool _isWalking;
     public bool IsWalking => _isWalking;
+
+    [SerializeField]
+    private bool _isAiming;
+    public bool IsAiming => _isAiming;
 
     private void Awake()
     {
@@ -26,19 +30,27 @@ public class InputManager : MonoBehaviour
     {
         _playerControl.Enable();
 
+        //Movement
         _playerControl.Player.Move.started += OnMoveInput;
         _playerControl.Player.Move.canceled += OnMoveInput;
         _playerControl.Player.Move.performed += OnMoveInput;
         
+        //Camera Input
         _playerControl.Player.Look.started += OnCameraInput;
         _playerControl.Player.Look.canceled += OnCameraInput;
         _playerControl.Player.Look.performed += OnCameraInput;
         
+        //Sprint Input
         _playerControl.Player.Sprint.started += OnSprintInput;
         _playerControl.Player.Sprint.canceled += OnSprintInput;
         _playerControl.Player.Sprint.performed += OnSprintInput;
 
+        //Walk Input
         _playerControl.Player.Walking.performed += OnWalkToggle;
+
+        //Aim Input
+        _playerControl.Action.Aim.started += OnAimInput;
+        _playerControl.Action.Aim.canceled += OnAimInput;
     }
 
     private void OnDisable()
@@ -57,7 +69,10 @@ public class InputManager : MonoBehaviour
         _playerControl.Player.Sprint.performed -= OnSprintInput;
         
         _playerControl.Player.Walking.performed -= OnWalkToggle;
-        
+
+        _playerControl.Action.Aim.started -= OnAimInput;
+        _playerControl.Action.Aim.canceled -= OnAimInput;
+
         _playerControl.Disable();
     }
 
@@ -89,6 +104,18 @@ public class InputManager : MonoBehaviour
         if (context.performed)
         {
             _isWalking = !_isWalking;
+        }
+    }
+
+    private void OnAimInput(InputAction.CallbackContext context)
+    {
+        if(context.started)
+        {
+            _isAiming = true;
+        }
+        else if (context.canceled)
+        {
+            _isAiming = false;
         }
     }
 }

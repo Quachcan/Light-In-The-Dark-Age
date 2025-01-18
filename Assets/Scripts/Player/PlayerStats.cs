@@ -57,7 +57,7 @@ namespace Player
             currentHealth -= effectiveDamage;
             currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
             
-            Debug.Log($"Player took {effectiveDamage} damage. Current health: {currentHealth}");
+            //Debug.Log($"Player took {effectiveDamage} damage. Current health: {currentHealth}");
 
             if (currentHealth <= 0)
             {
@@ -77,7 +77,7 @@ namespace Player
             currentStamina -= amount;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
             
-            Debug.Log($"Player used: {amount} stamina. Current stamina: {currentStamina}");
+           // Debug.Log($"Player used: {amount} stamina. Current stamina: {currentStamina}");
         }
 
         private void RegenerateStaminaOverTime()
@@ -128,7 +128,7 @@ namespace Player
 
         private void Die()
         {
-            Debug.Log("Player has died!");
+            //Debug.Log("Player has died!");
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Managers
                 _playerStats = GetComponent<PlayerStats>();
             
             _playerStats.InitStats();
-            _playerCombat.Initialize();
+            //_playerCombat.Initialize();
             //_playerMovement.Initialize();
         }
 

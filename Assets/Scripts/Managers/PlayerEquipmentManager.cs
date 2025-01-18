@@ -10,12 +10,16 @@ namespace Managers
         private AnimationManager _animationManager;
         private WeaponManager _weaponManager;
         public WeaponItem weapon;
+        [SerializeField]
+        private RightHandIKTarget _rightHandIKTarget;
+        [SerializeField]
+        private LeftHandIKTarget _leftHandIKTarget;
         //SubWeapon
 
         private void Awake()
         {
-            LoadWeaponsManager();
             _animationManager = GetComponent<AnimationManager>();
+            LoadWeaponsManager();
         }
 
         private void Start()
@@ -32,6 +36,9 @@ namespace Managers
         {
             _weaponManager.LoadWeaponsModel(weapon);
             _animationManager.animator.runtimeAnimatorController = weapon.animatorOverrideController;
+           _rightHandIKTarget = _weaponManager.currentWeaponModel.GetComponentInChildren<RightHandIKTarget>();
+            _leftHandIKTarget = _weaponManager.currentWeaponModel.GetComponentInChildren<LeftHandIKTarget>();
+            _animationManager.AssignHandIK(_rightHandIKTarget, _leftHandIKTarget);
         }
         
     }

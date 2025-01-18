@@ -1,16 +1,23 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Managers
 {
-    public class AnimationManager
+    public class AnimationManager : MonoBehaviour
     {
         private static AnimationManager _instance;
-        public static AnimationManager Instance => _instance ??= new AnimationManager();
+        
+        public Animator animator;
         
         private readonly Dictionary<Animator, Dictionary<string, int>> _animatorHashes = new Dictionary<Animator, Dictionary<string, int>>();
-        
-        public void InitializeAnimator(Animator animator, params string[] parameters)
+
+        private void Start()
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+
+        public void InitializeAnimator(Animator animators, params string[] parameters)
         {
             if (!_animatorHashes.ContainsKey(animator))
             {
@@ -23,7 +30,7 @@ namespace Managers
             }
         }
 
-        public void SetBool(Animator animator, string parameter, bool value)
+        public void SetBool(Animator animators, string parameter, bool value)
         {
             if (_animatorHashes.TryGetValue(animator, out var hashes) && hashes.TryGetValue(parameter, out var hash))
             {
@@ -31,7 +38,7 @@ namespace Managers
             }
         }
 
-        public void SetTrigger(Animator animator, string parameter)
+        public void SetTrigger(Animator animators, string parameter)
         {
             if (_animatorHashes.TryGetValue(animator, out var hashes) && hashes.TryGetValue(parameter, out var hash))
             {

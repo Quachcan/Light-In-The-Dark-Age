@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37061a4e985934374b51cdb0ce7a9729, type: 3}
+  m_Name: Revolver
+  m_EditorClassIdentifier: 
+  itemName: Revolver
+  itemModel: {fileID: 7957836364418246304, guid: 1f43c665255904aed854ff6d18d56c43, type: 3}
+  animatorOverrideController: {fileID: 22100000, guid: e84f3c94a8c3d4191ab223d4e128a2b6, type: 2}

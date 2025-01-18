@@ -11,6 +11,7 @@ namespace Player
         private Animator _animator;
         private InputManager _inputManager;
         private Rigidbody _rigidbody;
+        private AnimationManager _animationManager;
         
         private Vector3 _currentMovementInput;
         private Vector3 _currentMovement;
@@ -49,8 +50,9 @@ namespace Player
             _animator = GetComponentInChildren<Animator>();
             _inputManager = GetComponent<InputManager>();
             _rigidbody = GetComponent<Rigidbody>();
+            _animationManager = GetComponentInChildren<AnimationManager>();
             
-            AnimationManager.Instance.InitializeAnimator(_animator, "XInput", "YInput", "isWalking");
+            _animationManager.InitializeAnimator(_animator, "XInput", "YInput", "isWalking");
             
             _defaultMovementSpeed = movementSpeed;
         }
@@ -126,9 +128,9 @@ namespace Player
                 yValue = 2f;
             }
             
-            AnimationManager.Instance.SetBool(_animator, "isWalking", walking);
-            AnimationManager.Instance.SetFloat(_animator, "XInput", xValue);
-            AnimationManager.Instance.SetFloat(_animator, "YInput", yValue);
+            _animationManager.SetBool(_animator, "isWalking", walking);
+            _animationManager.SetFloat(_animator, "XInput", xValue);
+            _animationManager.SetFloat(_animator, "YInput", yValue);
         }
 
         private void OnEnable()

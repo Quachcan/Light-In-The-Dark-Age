@@ -17,6 +17,7 @@ namespace Player
 
         [SerializeField]
         private bool _isAiming;
+        private bool hasShoot;
 
         public void Awake()
         {
@@ -27,7 +28,30 @@ namespace Player
         }
         private void Update()
         {
+            bool _shooting = _inputManager.IsShooting;
+
+            if (_shooting && !hasShoot)
+            {
+                Shoot();
+                hasShoot = true;
+            }
+            else if (!_shooting)
+            {
+                hasShoot = false;
+            }
+
             HandleAnimations();
+        }
+
+        private void Shoot()
+        {
+            _isAiming = _inputManager.IsAiming;
+            
+            if(_isAiming)
+            {
+                Debug.Log("BANG");
+            }
+            
         }
 
         private void HandleAnimations()

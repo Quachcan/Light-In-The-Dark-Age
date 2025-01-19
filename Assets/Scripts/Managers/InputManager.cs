@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class InputManager : MonoBehaviour
 {
     private PlayerControl _playerControl;
+    private UIManager _uiManager;
 
     private Vector2 _moveInput;
     public Vector2 MoveInput => _moveInput;
@@ -17,13 +18,16 @@ public class InputManager : MonoBehaviour
     private bool _isWalking;
     public bool IsWalking => _isWalking;
 
-    [SerializeField]
     private bool _isAiming;
     public bool IsAiming => _isAiming;
+
+    private bool _isShooting;
+    public bool IsShooting => _isShooting;
 
     private void Awake()
     {
         _playerControl = new PlayerControl();
+        _uiManager = FindAnyObjectByType<UIManager>();
     }
 
     private void OnEnable()
@@ -51,6 +55,10 @@ public class InputManager : MonoBehaviour
         //Aim Input
         _playerControl.Action.Aim.started += OnAimInput;
         _playerControl.Action.Aim.canceled += OnAimInput;
+
+        //Shoot Input
+        _playerControl.Player.Attack.performed += OnShootInput;
+        _playerControl.Player.Attack.canceled += OnShootInput;
     }
 
     private void OnDisable()
@@ -72,6 +80,9 @@ public class InputManager : MonoBehaviour
 
         _playerControl.Action.Aim.started -= OnAimInput;
         _playerControl.Action.Aim.canceled -= OnAimInput;
+
+        _playerControl.Player.Attack.performed -= OnShootInput;
+        _playerControl.Player.Attack.canceled -= OnShootInput;
 
         _playerControl.Disable();
     }
@@ -112,10 +123,24 @@ public class InputManager : MonoBehaviour
         if(context.started)
         {
             _isAiming = true;
+            _uiManager.ActiveCrosshair();
         }
         else if (context.canceled)
         {
             _isAiming = false;
+            _uiManager.DeactiveCrosshair();
+        }
+    }
+
+    private void OnShootInput(InputAction.CallbackContext context)
+    { 
+        if(context.performed)
+        {
+            _isShooting = true;
+        }
+        else if(context.canceled)
+        {
+            _isShooting = false;
         }
     }
 }
